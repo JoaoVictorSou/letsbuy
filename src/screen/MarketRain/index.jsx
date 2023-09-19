@@ -5,8 +5,9 @@ import pedigree_image from '../../../static/products/pedigree.png'
 
 const screen_width = Dimensions.get('window').width
 const screen_height = Dimensions.get('window').height
-const image_square = 100
-const basket_square = 110
+const {width} = Image.resolveAssetSource(ruffles_image)
+const image_square = width
+const basket_square = 120
 const products = [
     ruffles_image,
     pedigree_image
@@ -36,13 +37,13 @@ function product_move (coordinates, win, screen_width, changeCoordinates, change
     }
     
     
-    let top_aligned = true //new_top >= screen_height-basket_square
-    let left_aligned = new_left >= (screen_width/2)-(basket_square/2) && new_left <= ((screen_width/2)-(basket_square/2)+basket_square)
+    let top_aligned = new_top >= screen_height-basket_square
+    let left_aligned = new_left >= (screen_width/2)-(basket_square/2) && new_left <= ((screen_width/2)-(basket_square/2)+basket_square-image_square)
     
     if (top_aligned && left_aligned) {
         changeCoordinates({
             left: new_left, 
-            top: 0
+            top: coordinates.top
         })
         changeWinStatus(true)
     } else {
@@ -86,6 +87,7 @@ const MarketRain = (_) => {
     const [coordinates, changeCoordinates] = useState({left: random_left_coordinates(), top: 0})
     const [product_image, changeProductImage] = useState(random_product())
     const [win, changeWinStatus] = useState(false)
+    const [img, setImageSquare] = useState({width: 100, height: 100})
 
     useEffect(() => {
         const ChangeCoordinatesIntervalID = setInterval(() => {
@@ -94,7 +96,6 @@ const MarketRain = (_) => {
             }
 
             if (coordinates.top > screen_height+image_square-50) {
-                console.log(win)
                 new_round(changeProductImage, changeCoordinates)
             }
         }, 100)
