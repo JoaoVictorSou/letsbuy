@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Image, Dimensions } from "react-native";
+import { View, Text, StyleSheet, Image, Dimensions, Alert } from "react-native";
 import ruffles_image from '../../../static/products/ruffles.png'
 import pedigree_image from '../../../static/products/pedigree.png'
 
 const screen_width = Dimensions.get('window').width
 const screen_height = Dimensions.get('window').height
 const image_square = 100
-const basket_square = 102
+const basket_square = 110
 const products = [
     ruffles_image,
     pedigree_image
@@ -16,7 +16,7 @@ const fall_pixels = screen_height/8
 const left_move_max =  Math.round(screen_width/8)
 const left_move_min = left_move_max*-1
 
-function product_move (coordinates, screen_width, changeCoordinates) {
+function product_move (coordinates, win, screen_width, changeCoordinates, changeWinStatus) {
     let increment = Math.floor(Math.random() * (fall_pixels + 1))
     let new_top = coordinates.top + increment
     let new_left = coordinates.left
@@ -35,10 +35,23 @@ function product_move (coordinates, screen_width, changeCoordinates) {
         }
     }
     
-    changeCoordinates({
-        left: new_left, 
-        top: new_top
-    })
+    
+    let top_aligned = true //new_top >= screen_height-basket_square
+    let left_aligned = new_left >= (screen_width/2)-(basket_square/2) && new_left <= ((screen_width/2)-(basket_square/2)+basket_square)
+    
+    if (top_aligned && left_aligned) {
+        changeCoordinates({
+            left: new_left, 
+            top: 0
+        })
+        changeWinStatus(true)
+    } else {
+        changeCoordinates({
+            left: new_left, 
+            top: new_top
+        })
+        changeWinStatus(false)  
+    }
 }
 
 function random_product() {
@@ -53,6 +66,17 @@ function random_left_coordinates() {
     return left_coordinate
 }
 
+function win_verify(win, coordinates, basket_square, screen_width, screen_height, changeWinStatus) {
+    console.log(`topo: ${coordinates.top}`)
+    console.log(`distancia do topo: ${screen_height-basket_square}`)
+    console.log(`status: ${win}`)
+    if ((!win) && ((coordinates.left < 1000) && (coordinates.top >= screen_height-basket_square))) {
+        changeWinStatus(true)
+    } else {
+        changeWinStatus(false)
+    }
+}
+
 function new_round(changeProductImage, changeCoordinates) {
     changeCoordinates({left: random_left_coordinates(), top: 0})
     changeProductImage(random_product())
@@ -64,10 +88,13 @@ const MarketRain = (_) => {
     const [win, changeWinStatus] = useState(false)
 
     useEffect(() => {
-        const ChangeCoordinatesIntervalID = setInterval(() => { 
-            product_move(coordinates, screen_width, changeCoordinates)
+        const ChangeCoordinatesIntervalID = setInterval(() => {
+            if (!win) {
+                product_move(coordinates, win, screen_width, changeCoordinates, changeWinStatus)
+            }
 
             if (coordinates.top > screen_height+image_square-50) {
+                console.log(win)
                 new_round(changeProductImage, changeCoordinates)
             }
         }, 100)
