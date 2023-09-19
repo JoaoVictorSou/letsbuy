@@ -2,15 +2,16 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Image, Dimensions, Alert } from "react-native";
 import ruffles_image from '../../../static/products/ruffles.png'
 import pedigree_image from '../../../static/products/pedigree.png'
+import basket_image from '../../../static/structure/basket.png'
 
 const screen_width = Dimensions.get('window').width
 const screen_height = Dimensions.get('window').height
 const {width} = Image.resolveAssetSource(ruffles_image)
 const image_square = width
-const basket_square = 120
+const basket_square = 130
 const products = [
     ruffles_image,
-    pedigree_image
+    //pedigree_image
 ]
 
 const fall_pixels = screen_height/8
@@ -37,13 +38,16 @@ function product_move (coordinates, win, screen_width, changeCoordinates, change
     }
     
     
-    let top_aligned = new_top >= screen_height-basket_square
-    let left_aligned = new_left >= (screen_width/2)-(basket_square/2) && new_left <= ((screen_width/2)-(basket_square/2)+basket_square-image_square)
+    const basket_position_y = screen_height-basket_square
+    const basket_position_x = (screen_width/2)-(basket_square/2)
+
+    let top_aligned = new_top >= basket_position_y && new_top <= screen_height
+    let left_aligned = new_left >= basket_position_x && new_left <= (basket_position_x+basket_square-image_square)
     
     if (top_aligned && left_aligned) {
         changeCoordinates({
             left: new_left, 
-            top: coordinates.top
+            top: new_top
         })
         changeWinStatus(true)
     } else {
@@ -78,9 +82,10 @@ function win_verify(win, coordinates, basket_square, screen_width, screen_height
     }
 }
 
-function new_round(changeProductImage, changeCoordinates) {
+function new_round(changeProductImage, changeCoordinates, changeWinStatus) {
     changeCoordinates({left: random_left_coordinates(), top: 0})
     changeProductImage(random_product())
+    changeWinStatus(false)
 }
 
 const MarketRain = (_) => {
@@ -91,24 +96,35 @@ const MarketRain = (_) => {
 
     useEffect(() => {
         const ChangeCoordinatesIntervalID = setInterval(() => {
-            if (!win) {
-                product_move(coordinates, win, screen_width, changeCoordinates, changeWinStatus)
-            }
+            product_move(coordinates, win, screen_width, changeCoordinates, changeWinStatus)
 
-            if (coordinates.top > screen_height+image_square-50) {
-                new_round(changeProductImage, changeCoordinates)
+            if ((coordinates.top > screen_height+image_square) || win) {
+                if (win) {
+                    console.log('YOU WIN!')
+                } else {
+                    console.log('GAME OVER!')
+                }
+                new_round(changeProductImage, changeCoordinates, changeWinStatus)
             }
-        }, 100)
+        }, 125)
 
         return () => clearInterval(ChangeCoordinatesIntervalID)
     }, [coordinates])
 
     styles.product_coordinates = coordinates
     
+    const t = (_) => {
+        if(win) {
+        const teste =  Alert.alert(title = 'Parabêns.', message = "Você ganhou!")
+        console.log(teste)
+        }
+    }
+
     return (
         <View style={styles.market_rain_wrapper}>
+            {t()}
             <Image style = {[styles.product, styles.product_coordinates]} source={product_image} />
-            <View style={styles.market_basket}></View>
+            <Image style={styles.market_basket} source={basket_image} />
         </View>
     )
 }
@@ -125,11 +141,9 @@ const styles = StyleSheet.create({
     },
     market_basket: {
         width: basket_square,
-        height: basket_square,
         position: "absolute",
         top: screen_height-basket_square,
-        left: (screen_width/2)-(basket_square/2),
-        backgroundColor: "red"
+        left: (screen_width/2)-(basket_square/2)
     }
 })
 
