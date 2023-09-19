@@ -6,6 +6,7 @@ import pedigree_image from '../../../static/products/pedigree.png'
 const screen_width = Dimensions.get('window').width
 const screen_height = Dimensions.get('window').height
 const image_square = 100
+const basket_square = 102
 const products = [
     ruffles_image,
     pedigree_image
@@ -60,6 +61,7 @@ function new_round(changeProductImage, changeCoordinates) {
 const MarketRain = (_) => {
     const [coordinates, changeCoordinates] = useState({left: random_left_coordinates(), top: 0})
     const [product_image, changeProductImage] = useState(random_product())
+    const [win, changeWinStatus] = useState(false)
 
     useEffect(() => {
         const ChangeCoordinatesIntervalID = setInterval(() => { 
@@ -75,15 +77,31 @@ const MarketRain = (_) => {
 
     styles.product_coordinates = coordinates
     
-    return <Image style = {[styles.product, styles.product_coordinates]} source={product_image} />
+    return (
+        <View style={styles.market_rain_wrapper}>
+            <Image style = {[styles.product, styles.product_coordinates]} source={product_image} />
+            <View style={styles.market_basket}></View>
+        </View>
+    )
 }
 
 const styles = StyleSheet.create({
-    product: {
+    market_rain_wrapper: {
         position: "relative"
+    },
+    product: {
+        position: "absolute"
     },
     product_coordinates: {
         top: 50
+    },
+    market_basket: {
+        width: basket_square,
+        height: basket_square,
+        position: "absolute",
+        top: screen_height-basket_square,
+        left: (screen_width/2)-(basket_square/2),
+        backgroundColor: "red"
     }
 })
 
