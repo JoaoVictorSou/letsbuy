@@ -27,7 +27,7 @@ function product_move (coordinates, win, screen_width, changeCoordinates, change
     let increment = Math.floor(Math.random() * (fall_pixels + 1))
     let new_top = coordinates.top + increment
     let new_left = coordinates.left
-    const move = Math.floor(Math.random() * (2 + 1))
+    const move = Math.floor(Math.random() * (1 + 1))
     
     if (move == 1) {
         if (coordinates.left <= 0) {
@@ -85,7 +85,6 @@ const MarketRain = (_) => {
     const [coordinates, changeCoordinates] = useState({left: random_left_coordinates(), top: 0})
     const [product_image, changeProductImage] = useState(random_product())
     const [win, changeWinStatus] = useState(false)
-    const [img, setImageSquare] = useState({width: 100, height: 100})
     const [gameState, changeGameState] = useState(1)
 
     useEffect(() => {
@@ -97,16 +96,11 @@ const MarketRain = (_) => {
 
         win_verify(win, coordinates, image_square, basket_square, screen_width, screen_height, changeWinStatus)
         
-        if ((coordinates.top > screen_height+image_square) || win) {
-            if (win) {
-                if (gameState == 1) {
-                    final_round_alert()
-                    changeGameState(0)
-                } 
-            } else {
-                new_round(changeProductImage, changeCoordinates, changeWinStatus, changeGameState)
-            }
-            
+        if ((coordinates.top > screen_height) || win) {
+            if (gameState == 1) {
+                final_round_alert()
+                changeGameState(0)
+            } 
         }
         
         return () => clearInterval(ChangeCoordinatesIntervalID)
@@ -116,8 +110,18 @@ const MarketRain = (_) => {
     const final_round_alert = async (_) => {
         if(win) {
             Alert.alert(
-                title = 'Parabêns.', 
-                message = "Você ganhou!",
+                title = 'Parabêns!', 
+                message = "Você conseguiu colocar o produto na cesta.",
+                buttons = [
+                    {text: "Continuar", onPress: () => {
+                        new_round(changeProductImage, changeCoordinates, changeWinStatus, changeGameState)
+                    }}
+                ]
+            )
+        } else {
+            Alert.alert(
+                title = 'Que pena!', 
+                message = "Não foi dessa vez. O produto não chegou a cesta.",
                 buttons = [
                     {text: "Continuar", onPress: () => {
                         new_round(changeProductImage, changeCoordinates, changeWinStatus, changeGameState)
