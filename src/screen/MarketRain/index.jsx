@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Image, Dimensions, Alert } from "react-native";
+
 import ruffles_image from '../../../static/products/ruffles.png'
-import pedigree_image from '../../../static/products/pedigree.png'
-import basket_image from '../../../static/structure/basket.png'
+import glade_image from '../../../static/products/glade-johnson.png'
+import camil_cookie_image from '../../../static/products/rosquinha-camil.png'
+import urca_soap_image from '../../../static/products/sabao-urca.png'
+import basket_image from '../../../static/structure/basket2.png'
 
 const screen_width = Dimensions.get('window').width
 const screen_height = Dimensions.get('window').height
 const {width} = Image.resolveAssetSource(ruffles_image)
 const image_square = width
-const basket_square = 130
+const basket_square = 145
 const products = [
     ruffles_image,
-    //pedigree_image
+    glade_image,
+    camil_cookie_image,
+    urca_soap_image
 ]
 
 const fall_pixels = screen_height/8
@@ -36,27 +41,11 @@ function product_move (coordinates, win, screen_width, changeCoordinates, change
             new_left = new_left+increment
         }
     }
-    
-    
-    const basket_position_y = screen_height-basket_square
-    const basket_position_x = (screen_width/2)-(basket_square/2)
 
-    let top_aligned = new_top >= basket_position_y && new_top <= screen_height
-    let left_aligned = new_left >= basket_position_x && new_left <= (basket_position_x+basket_square-image_square)
-    
-    if (top_aligned && left_aligned) {
-        changeCoordinates({
-            left: new_left, 
-            top: new_top
-        })
-        changeWinStatus(true)
-    } else {
-        changeCoordinates({
-            left: new_left, 
-            top: new_top
-        })
-        changeWinStatus(false)  
-    }
+    changeCoordinates({
+        left: new_left, 
+        top: new_top
+    })
 }
 
 function random_product() {
@@ -71,21 +60,25 @@ function random_left_coordinates() {
     return left_coordinate
 }
 
-function win_verify(win, coordinates, basket_square, screen_width, screen_height, changeWinStatus) {
-    console.log(`topo: ${coordinates.top}`)
-    console.log(`distancia do topo: ${screen_height-basket_square}`)
-    console.log(`status: ${win}`)
-    if ((!win) && ((coordinates.left < 1000) && (coordinates.top >= screen_height-basket_square))) {
+function win_verify(win, coordinates, image_square, basket_square, screen_width, screen_height, changeWinStatus) {
+    const basket_position_y = screen_height-basket_square
+    const basket_position_x = (screen_width/2)-(basket_square/2)
+
+    let top_aligned = coordinates.top >= basket_position_y && coordinates.top <= screen_height
+    let left_aligned = coordinates.left >= basket_position_x && coordinates.left <= (basket_position_x+basket_square-image_square)
+    
+    if (top_aligned && left_aligned) {
         changeWinStatus(true)
     } else {
-        changeWinStatus(false)
+        changeWinStatus(false)  
     }
 }
 
-function new_round(changeProductImage, changeCoordinates, changeWinStatus) {
+function new_round(changeProductImage, changeCoordinates, changeWinStatus, changeGameState) {
     changeCoordinates({left: random_left_coordinates(), top: 0})
     changeProductImage(random_product())
     changeWinStatus(false)
+    changeGameState(1)
 }
 
 const MarketRain = (_) => {
@@ -93,36 +86,51 @@ const MarketRain = (_) => {
     const [product_image, changeProductImage] = useState(random_product())
     const [win, changeWinStatus] = useState(false)
     const [img, setImageSquare] = useState({width: 100, height: 100})
+    const [gameState, changeGameState] = useState(1)
 
     useEffect(() => {
         const ChangeCoordinatesIntervalID = setInterval(() => {
-            product_move(coordinates, win, screen_width, changeCoordinates, changeWinStatus)
-
-            if ((coordinates.top > screen_height+image_square) || win) {
-                if (win) {
-                    console.log('YOU WIN!')
-                } else {
-                    console.log('GAME OVER!')
-                }
-                new_round(changeProductImage, changeCoordinates, changeWinStatus)
+            if (gameState != 0) {
+                product_move(coordinates, win, screen_width, changeCoordinates, changeWinStatus)
             }
-        }, 125)
+        }, 100)
 
+        win_verify(win, coordinates, image_square, basket_square, screen_width, screen_height, changeWinStatus)
+        
+        if ((coordinates.top > screen_height+image_square) || win) {
+            if (win) {
+                if (gameState == 1) {
+                    final_round_alert()
+                    changeGameState(0)
+                } 
+            } else {
+                new_round(changeProductImage, changeCoordinates, changeWinStatus, changeGameState)
+            }
+            
+        }
+        
         return () => clearInterval(ChangeCoordinatesIntervalID)
-    }, [coordinates])
 
-    styles.product_coordinates = coordinates
-    
-    const t = (_) => {
+    }, [coordinates, gameState])
+
+    const final_round_alert = async (_) => {
         if(win) {
-        const teste =  Alert.alert(title = 'Parabêns.', message = "Você ganhou!")
-        console.log(teste)
+            Alert.alert(
+                title = 'Parabêns.', 
+                message = "Você ganhou!",
+                buttons = [
+                    {text: "Continuar", onPress: () => {
+                        new_round(changeProductImage, changeCoordinates, changeWinStatus, changeGameState)
+                    }}
+                ]
+            )
         }
     }
 
+    styles.product_coordinates = coordinates
+
     return (
         <View style={styles.market_rain_wrapper}>
-            {t()}
             <Image style = {[styles.product, styles.product_coordinates]} source={product_image} />
             <Image style={styles.market_basket} source={basket_image} />
         </View>
@@ -131,7 +139,10 @@ const MarketRain = (_) => {
 
 const styles = StyleSheet.create({
     market_rain_wrapper: {
-        position: "relative"
+        position: "relative",
+        backgroundColor: "#223D73",
+        width: screen_width,
+        height: screen_height
     },
     product: {
         position: "absolute"
@@ -140,7 +151,6 @@ const styles = StyleSheet.create({
         top: 50
     },
     market_basket: {
-        width: basket_square,
         position: "absolute",
         top: screen_height-basket_square,
         left: (screen_width/2)-(basket_square/2)
