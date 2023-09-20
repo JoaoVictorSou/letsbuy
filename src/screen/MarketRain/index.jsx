@@ -11,7 +11,7 @@ const screen_width = Dimensions.get('window').width
 const screen_height = Dimensions.get('window').height
 const {width} = Image.resolveAssetSource(ruffles_image)
 const image_square = width
-const basket_square = 145
+const basket_square = 138
 const products = [
     ruffles_image,
     glade_image,
@@ -136,7 +136,9 @@ const MarketRain = (_) => {
     return (
         <View style={styles.market_rain_wrapper}>
             <Image style = {[styles.product, styles.product_coordinates]} source={product_image} />
-            <Image style={styles.market_basket} source={basket_image} />
+            <View style = {styles.basket_area}>
+                <Image style={styles.market_basket} source={basket_image} />
+            </View>
         </View>
     )
 }
@@ -155,9 +157,14 @@ const styles = StyleSheet.create({
         top: 50
     },
     market_basket: {
-        position: "absolute",
+        position: "absolute"
+    },
+    basket_area: {
         top: screen_height-basket_square,
-        left: (screen_width/2)-(basket_square/2)
+        left: (screen_width/2)-(basket_square/2),
+        width: basket_square,
+        height: basket_square,
+        alignItems: "center"
     }
 })
 
