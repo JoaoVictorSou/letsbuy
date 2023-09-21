@@ -5,13 +5,13 @@ import ruffles_image from '../../../static/products/ruffles.png'
 import glade_image from '../../../static/products/glade-johnson.png'
 import camil_cookie_image from '../../../static/products/rosquinha-camil.png'
 import urca_soap_image from '../../../static/products/sabao-urca.png'
-import basket_image from '../../../static/structure/basket2.png'
+import basket_image from '../../../static/structure/basket.png'
 
 const screen_width = Dimensions.get('window').width
 const screen_height = Dimensions.get('window').height
 const {width} = Image.resolveAssetSource(ruffles_image)
 const image_square = width
-const basket_square = 138
+const basket_square = 250
 const products = [
     ruffles_image,
     glade_image,
@@ -108,6 +108,8 @@ const MarketRain = (_) => {
     }, [coordinates, gameState])
 
     const final_round_alert = async (_) => {
+        changeCoordinates({left: -1, top: screen_height+image_square})
+
         if(win) {
             Alert.alert(
                 title = 'Parabêns!', 
