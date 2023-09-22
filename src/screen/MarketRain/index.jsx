@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Image, Dimensions, Alert } from "react-native";
+import { View, Text, StyleSheet, Image, Dimensions, Alert, ImageBackground } from "react-native";
 
 import ruffles_image from '../../../static/products/ruffles.png'
 import camil_cookie_image from '../../../static/products/rosquinha-camil.png'
@@ -26,7 +26,10 @@ import mars_twix from '../../../static/products/twix-mars.png'
 import valduga_arte_wine from '../../../static/products/vinho-arte-valduga.png'
 import marspet_wiskas from '../../../static/products/wiskas-marspet.png'
 import urca_soap_image from '../../../static/products/sabao-urca.png'
+
 import basket_image from '../../../static/structure/basket.png'
+import cda_sombol from '../../../static/structure/cda-simbol.png'
+import background from '../../../static/structure/market-rain-background.png'
 
 const screen_width = Dimensions.get('window').width
 const screen_height = Dimensions.get('window').height
@@ -68,7 +71,7 @@ function product_move (coordinates, win, screen_width, changeCoordinates, change
     let increment = Math.floor(Math.random() * (fall_pixels + 1))
     let new_top = coordinates.top + increment
     let new_left = coordinates.left
-    const move = Math.floor(Math.random() * (1 + 1))
+    const move = Math.floor(Math.random() * (2 + 1))
     
     if (move == 1) {
         if (coordinates.left <= 0) {
@@ -178,10 +181,13 @@ const MarketRain = (_) => {
 
     return (
         <View style={styles.market_rain_wrapper}>
+            <ImageBackground source={background} resizeMode="cover" style = {styles.background_area}>
+            <Image style = {styles.corporation_logo} source={cda_sombol} />
             <Image style = {[styles.product, styles.product_coordinates]} source={product_image} />
             <View style = {styles.basket_area}>
                 <Image style={styles.market_basket} source={basket_image} />
             </View>
+            </ImageBackground>
         </View>
     )
 }
@@ -189,7 +195,7 @@ const MarketRain = (_) => {
 const styles = StyleSheet.create({
     market_rain_wrapper: {
         position: "relative",
-        backgroundColor: "#223D73",
+        //backgroundColor: "#f1f1f1", //"#223D73",
         width: screen_width,
         height: screen_height
     },
@@ -208,6 +214,13 @@ const styles = StyleSheet.create({
         width: basket_square,
         height: basket_square,
         alignItems: "center"
+    },
+    corporation_logo: {
+        position: "absolute",
+        margin: 20
+    },
+    background_area: {
+        flex: 1
     }
 })
 
