@@ -1,75 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Image, Dimensions, Alert, ImageBackground } from "react-native";
 
-import ruffles_image from '../../../static/products/ruffles.png'
-import camil_cookie_image from '../../../static/products/rosquinha-camil.png'
-import andorinha_oil from '../../../static/products/azeite-andorinha.png'
-import bayer_bepantol from '../../../static/products/bepantol-bayer.png'
-import grendene_slipper from '../../../static/products/chinelo-grendene.png'
-import linea_chocolate from '../../../static/products/chocolate-linea.png'
-import lanossi_elastic from '../../../static/products/elastico-lanossi.png'
-import porridge from '../../../static/products/farinha-lactea.png'
-import modess_evergreen from '../../../static/products/modess-evergreen.png'
-//import dacolonia_sweet_peanut from '../../../static/products/pe-moleque-dacolonia.png'
-import rayovac_battery from '../../../static/products/pilha-rayovac.png'
-import aurora_tabasco_pepper from '../../../static/products/pimenta-tabasco-aurora.png'
-import urca_solid_soap from '../../../static/products/sabao-pedra-urca.png'
-import nivea_milk_soap from '../../../static/products/sabonete-milk-nivea.png'
-import nivea_soap from '../../../static/products/sabonete-nivea.png'
-import mars_skittles from '../../../static/products/skittles-mars.png'
-import diageo_smirnoff from '../../../static/products/smirnoff-diageo.png'
-import mars_snickers from '../../../static/products/snickers-mars.png'
-import fante_juice from '../../../static/products/suco-fante.png'
-import hair_dye_duty from '../../../static/products/tinta-duty.png'
-import pepsico_toddynho from '../../../static/products/toddynho-pepsico.png'
-import mars_twix from '../../../static/products/twix-mars.png'
-import valduga_arte_wine from '../../../static/products/vinho-arte-valduga.png'
-import marspet_wiskas from '../../../static/products/wiskas-marspet.png'
-import urca_soap_image from '../../../static/products/sabao-urca.png'
+import products from "../../util/product_image";
 
 import basket_image from '../../../static/structure/basket.png'
 import cda_sombol from '../../../static/structure/cda-simbol.png'
 import background from '../../../static/structure/market-rain-background.png'
 
+import { get_image_dimensions } from "../../util/data_treatment";
+
 const screen_width = Dimensions.get('window').width
 const screen_height = Dimensions.get('window').height
-const {width} = Image.resolveAssetSource(ruffles_image)
-const image_square = width
 const basket_square = 250
-const products = [
-    ruffles_image,
-    camil_cookie_image,
-    andorinha_oil,
-    bayer_bepantol,
-    grendene_slipper,
-    linea_chocolate,
-    lanossi_elastic,
-    porridge,
-    modess_evergreen,
-    rayovac_battery,
-    aurora_tabasco_pepper,
-    urca_solid_soap,
-    nivea_milk_soap,
-    nivea_soap,
-    mars_skittles,
-    diageo_smirnoff,
-    mars_snickers,
-    fante_juice,
-    hair_dye_duty,
-    pepsico_toddynho,
-    mars_twix,
-    valduga_arte_wine,
-    marspet_wiskas,
-    urca_soap_image
-]
-
 const fall_pixels = screen_height/8
 const left_move_max =  Math.round(screen_width/8)
 const left_move_min = left_move_max*-1
 
-function product_move (coordinates, win, screen_width, changeCoordinates, changeWinStatus) {
-    let increment = Math.floor(Math.random() * (fall_pixels + 1))
-    let new_top = coordinates.top + increment
+function product_move (coordinates, image_dimensions, win, screen_width, changeCoordinates, changeWinStatus) {
+    let top_increment = Math.floor(Math.random() * (fall_pixels + 1))
+    let new_top = coordinates.top + top_increment
+    
     let new_left = coordinates.left
     const move = Math.floor(Math.random() * (2 + 1))
     
@@ -77,7 +27,7 @@ function product_move (coordinates, win, screen_width, changeCoordinates, change
         if (coordinates.left <= 0) {
             let increment = Math.floor(Math.random() * (left_move_max + 1))
             new_left = new_left+increment
-        } else if (coordinates.left >= screen_width-image_square) {
+        } else if (coordinates.left >= screen_width-image_dimensions.width) {
             let increment = Math.floor(Math.random() * (left_move_max + 1))
             new_left = new_left-increment
         } else {
@@ -98,18 +48,18 @@ function random_product() {
     return products[index]
 }
 
-function random_left_coordinates() {
-    let left_coordinate = Math.floor(Math.random() * (screen_width-image_square + 1))
+function random_left_coordinates(image_dimensions) {
+    let left_coordinate = Math.floor(Math.random() * (screen_width-image_dimensions.width + 1))
     
     return left_coordinate
 }
 
-function win_verify(win, coordinates, image_square, basket_square, screen_width, screen_height, changeWinStatus) {
+function win_verify(win, coordinates, image_dimensions, basket_square, screen_width, screen_height, changeWinStatus) {
     const basket_position_y = screen_height-basket_square
     const basket_position_x = (screen_width/2)-(basket_square/2)
 
     let top_aligned = coordinates.top >= basket_position_y && coordinates.top <= screen_height
-    let left_aligned = coordinates.left >= basket_position_x && coordinates.left <= (basket_position_x+basket_square-image_square)
+    let left_aligned = coordinates.left >= basket_position_x && coordinates.left <= (basket_position_x+basket_square-image_dimensions.width)
     
     if (top_aligned && left_aligned) {
         changeWinStatus(true)
@@ -118,27 +68,28 @@ function win_verify(win, coordinates, image_square, basket_square, screen_width,
     }
 }
 
-function new_round(changeProductImage, changeCoordinates, changeWinStatus, changeGameState) {
-    changeCoordinates({left: random_left_coordinates(), top: 0})
+function new_round(image_dimensions, changeProductImage, changeCoordinates, changeWinStatus, changeGameState) {
+    changeCoordinates({left: random_left_coordinates(image_dimensions), top: 0})
     changeProductImage(random_product())
     changeWinStatus(false)
     changeGameState(1)
 }
 
 const MarketRain = (_) => {
-    const [coordinates, changeCoordinates] = useState({left: random_left_coordinates(), top: 0})
     const [product_image, changeProductImage] = useState(random_product())
+    const [image_dimensions, changeImageDimensions] = useState(get_image_dimensions(product_image))
+    const [coordinates, changeCoordinates] = useState({left: random_left_coordinates(image_dimensions), top: 0})
     const [win, changeWinStatus] = useState(false)
     const [gameState, changeGameState] = useState(1)
 
     useEffect(() => {
         const ChangeCoordinatesIntervalID = setInterval(() => {
             if (gameState != 0) {
-                product_move(coordinates, win, screen_width, changeCoordinates, changeWinStatus)
+                product_move(coordinates, image_dimensions, win, screen_width, changeCoordinates, changeWinStatus)
             }
         }, 100)
 
-        win_verify(win, coordinates, image_square, basket_square, screen_width, screen_height, changeWinStatus)
+        win_verify(win, coordinates, image_dimensions, basket_square, screen_width, screen_height, changeWinStatus)
         
         if ((coordinates.top > screen_height) || win) {
             if (gameState == 1) {
@@ -152,7 +103,7 @@ const MarketRain = (_) => {
     }, [coordinates, gameState])
 
     const final_round_alert = async (_) => {
-        changeCoordinates({left: -1, top: screen_height+image_square})
+        changeCoordinates({left: -1, top: screen_height+image_dimensions.width})
 
         if(win) {
             Alert.alert(
@@ -160,7 +111,7 @@ const MarketRain = (_) => {
                 message = "Você conseguiu colocar o produto na cesta.",
                 buttons = [
                     {text: "Continuar", onPress: () => {
-                        new_round(changeProductImage, changeCoordinates, changeWinStatus, changeGameState)
+                        new_round(image_dimensions, changeProductImage, changeCoordinates, changeWinStatus, changeGameState)
                     }}
                 ]
             )
@@ -170,7 +121,7 @@ const MarketRain = (_) => {
                 message = "Não foi dessa vez. O produto não chegou a cesta.",
                 buttons = [
                     {text: "Continuar", onPress: () => {
-                        new_round(changeProductImage, changeCoordinates, changeWinStatus, changeGameState)
+                        new_round(image_dimensions, changeProductImage, changeCoordinates, changeWinStatus, changeGameState)
                     }}
                 ]
             )
