@@ -11,8 +11,8 @@ import { get_image_dimensions } from "../../util/data_treatment";
 
 const screen_width = Dimensions.get('window').width
 const screen_height = Dimensions.get('window').height
-const basket_width = 251
-const basket_height = 200
+const basket_width = 252
+const basket_height = 215
 const fall_pixels = screen_height/15
 const left_move_max =  Math.round(screen_width/9)
 const left_move_min = left_move_max*-1
